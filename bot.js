@@ -16,6 +16,15 @@ const token_test = 'vk1.a.k0tX4Z1DCA09RgW-m9OIRIDAQA8eZhdlQMVa-WQDZ84g2sUun6F23S
 
 const Igor_ID = 239146759;
 const Ilya_ID = 146966175;
+
+let members = [];
+members[0] = {
+    id: Igor_ID,
+};
+
+
+const Requisites = '+7123456789';
+const delay = 300000; // 300 тысяч миллисекунд = 5 минут
 // Функции для обращения ко всем участникам
 
 // Рассылка сообщений циклом // ctx.message.from_id
@@ -77,6 +86,15 @@ const addNewParticipant = (name, vkID) => {
     // console.log(userInfo);
 }
 
+function findCurrentParticipant(vkID) {
+    // Нахожу вот тут в БД этого чувака и вот так
+    return 'Путь к чуваку в базе данных'
+};
+
+function changeParticipantObject(currentParticipant, property, value) {
+    currentParticipant.property = value;
+}
+
 let userTest = new Participant("Игорь", "Пепегин", Igor_ID, 1);
 
 const VkBot = require('node-vk-bot-api');
@@ -98,139 +116,198 @@ let request = new URL(`https://api.vk.com/method/messages.getHistory?&count=1&pe
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 
-async function confirmation() {
-    async function reqListener () {
+async function confirmationWithLastMessage() {
+    async function confirmation () {
         let infromation = this.responseText.split(",");
         let informationTo_arr = infromation.splice(infromation.length - 1);
         let infromationTo_string = informationTo_arr.join();
         let lastMessage = infromationTo_string.toLowerCase();
         console.log(lastMessage, '\n эу \n');
-        if (lastMessage.includes("введённых")){
-            bot.sendMessage(ctx.message.from_id, "Оплата подтверждена")
+        if (lastMessage.toLowerCase.includes("подтвердить")){
+            ctx.scene.next();
+            bot.sendMessage(ctx.message.from_id, "Оплата подтверждена, двигаемся к регистрации");
+            let TheParticipant = findCurrentParticipant(ctx.message.from_id);
+            TheParticipant.paymentStatus = 1;
+            // Отправка на MongoDB сообщения об изменениях ...
+            // {*/}
         } else 
         console.log('Всё хуёва');
     }
     
     const req = new XMLHttpRequest();
     let nice = 0;
-    req.addEventListener("load", reqListener);
+    req.addEventListener("load", confirmation());
     req.open("GET", request);
     req.send();
-    return nice;
+    return 'smth'
 }
 
 // console.log('Результат: ' + lastMessage);
 
-const scene_wakeUP = new Scene('Начать сценарий', 
+const scene_Halloween = new Scene('Хеллоуин', 
     async (ctx) => {
         ctx.scene.next();
-        await ctx.reply(`Добрый день!
-        Добро пожаловать на Halloween!
+        await ctx.reply(`Добро пожаловать на Halloween! 👻
         В прохождении регистрации вам посодействует бот-помощник.
-        Именно он и определит, кто станет победителем лотерии!
-        `, null, Markup
+        Именно он и определит, кто станет победителем лотереи! \n\n
+        Чтобы начать регистрацию на лотерею, необходимо купить лотерейный билет c: (50 рублей)`, null, Markup
         .keyboard([   
             [
-                Markup.button('Начать регистрацию', 'primary'),
+                Markup.button('Оплатить билет', 'positive'),
+            ],
+            [
+                Markup.button('Батя в здании', "primary"),
             ],
         ])
         );
     },
     async (ctx) => {
-        ctx.scene.next();
-        ctx.reply('пошёл нахуй');
-    },
-    async (ctx) => {
-        ctx.scene.next();
-        await ctx.reply('Введите через пробел свои имя и фамилию, проверьте, заранее, точность введённых данных');
-    },
-    async (ctx) => {
-        switch(ctx.message.text.toLowerCase()) {
-            case "сообщение всем":
+        switch (ctx.message.text.toLowerCase()) {
+            case "оплатить билет":
+                ctx.scene.next();
+                ctx.reply(`Реквизиты "${Requisites}" \n
+                Теперь от тебя понадобится скриншот с чеком об оплате. Я проверю 🤓
+                `);
+                break;
+            case "батя в здании":
                 if((ctx.message.from_id === Igor_ID) || (ctx.message.from_id === Ilya_ID)) {
-                    ctx.scene.next();
-                    await ctx.reply('Следующее сообщение, отправленное тобой, будет выведено всем первокурсникам', null, Markup 
-                    .keyboard([
-                        [
-                        Markup.button('Отмена', 'negative'),
-                        ],
-                    ])
-                    .oneTime(),
-                    );
-                    break;
+                    ctx.scene.leave();
+                    ctx.scene.enter("Батя в здании");
                 }
                 else {
                     ctx.reply("У вас нет доступа к этой команде");
                 }
+                break;
             default: 
-                ctx.scene.next();
-                ctx.reply("");
-                addNewParticipant(ctx.message.text, ctx.message.from_id);
+                ctx.reply("Я не понял, платить будеш, нет? 😡");
         }
     },
     async (ctx) => {
-        if (ctx.message.text.toLowerCase() === 'отмена'){
-            ctx.reply("Функция рассылки сообщения всем отменена")
-            ctx.scene.leave();
-        }
-        else {
+        ctx.reply("Обрабатываю");
+                        // do {
+                
+                // } while (!confirmationWithLastMessage());
+                // Нужна помощь
+                // setTimeout(confirmationWithLastMessage(), delay);
+    },
+    async (ctx) => {
         ctx.scene.next();
-        ctx.session.message = ctx.message.text;
-        ctx.reply(ctx.session.message + "\n\n Это сообщение будет выведено всем первокурсникам, вы уверенны, что хотите его отправить?", null, Markup
+        await bot.sendMessage(ctx.message.from_id, 'Введите через пробел свои имя и фамилию, проверьте, заранее, точность введённых данных');
+    },
+);
+
+const scene_Admin = new Scene("Батя в здании", // Сценарий админов
+    async (ctx) => {
+        await ctx.reply('Здравствуй, папа', "photo409326303_457239373", Markup
         .keyboard([   
             [
-                Markup.button('Да', 'positive'),
-                Markup.button('Нет', 'negative'),
+                Markup.button('Сообщение всем', 'primary'),
+                Markup.button('Ещё какая-то кнопка', 'primary'),
+            ],
+            [
+                Markup.button('Как настроение?', 'positive'),
+            ],
+            [
+                Markup.button("Покинуть admin-menu", "negative" ), 
             ],
         ])
-        .oneTime(),
         );
-        }
+        await ctx.scene.next();
     },
     async (ctx) => {
         switch(ctx.message.text.toLowerCase()) {
-            case "да": 
-            await massMessage(ctx.session.message);
-            // await bot.sendMessage(Igor_ID, ctx.session.message);
-            await bot.sendMessage([Igor_ID, Ilya_ID], "Сообщение: \" " + ctx.session.message + "\" \n было отправлено");
-            await ctx.scene.leave();
-            break;
-            case "нет":
-                await ctx.reply("Бот перезагружен");
+            case "сообщение всем":
+                ctx.scene.leave();
+                ctx.scene.enter("Сообщение всем");
+                break; 
+            case "...": 
+            case "как настроение?": 
+                await ctx.reply("", "video174550193_456239109");
+                bot.sendMessage(ctx.message.from_id, "Это люба говорит");
+            case "покинуть admin-menu":
+                ctx.reply("Но это не отменяет того факта, что ты - мой папа ❤", null, Markup
+                .keyboard ([
+                ])
+                );
                 ctx.scene.leave();
                 break;
             default: 
-            ctx.reply("Такой функции нет");
+                ctx.reply("Не нашёл такой команды 🤨", null, Markup
+                .keyboard([   
+                    [
+                        Markup.button('Сообщение всем', 'primary'),
+                        Markup.button('Ещё какая-то кнопка', 'primary'),
+                    ],
+                    [
+                        Markup.button('Как настроение?', 'positive'),
+                    ],
+                ])
+                );
         }
-    },
+    }
 );
 
-const sceneTest = new Scene('Проверить сценарий', 
-    async (ctx) => {
-        ctx.scene.next();
-        console.log(1);
-        await ctx.reply('...', null, Markup
-        .keyboard([   
-            [
-                Markup.button('Моя помада', 'secondary'),
-                Markup.button('Маршрутный глист', 'primary'),
-            ],
-        ])
-        );
-    },
+const scene_MassMessage = new Scene("Сообщение всем",
+async (ctx) => {
+    switch(ctx.message.text.toLowerCase()) {
+        case "сообщение всем":
+                ctx.scene.next();
+                await ctx.reply('Следующее сообщение, отправленное тобой, будет выведено всем первокурсникам', null, Markup 
+                .keyboard([
+                    [
+                    Markup.button('Отмена', 'negative'),
+                    ],
+                ])
+                .oneTime(),
+                );
+                break;
+        default: 
+            ctx.reply("Не нашёл такой команды");
+    }
+},
+async (ctx) => {
+    if (ctx.message.text.toLowerCase() === 'отмена'){
+        ctx.reply("Функция рассылки сообщения всем отменена \n Верну в начало менюшки");
+        ctx.scene.leave();
+        ctx.scene.enter("Батя в здании");
+    }
+    else {
+    ctx.scene.next();
+    ctx.session.message = ctx.message.text;
+    ctx.reply(ctx.session.message + "\n\n Это сообщение будет выведено всем первокурсникам, вы уверенны, что хотите его отправить?", null, Markup
+    .keyboard([   
+        [
+            Markup.button('Да', 'positive'),
+            Markup.button('Нет', 'negative'),
+        ],
+    ])
+    .oneTime(),
+    );
+    }
+},
+async (ctx) => {
+    switch(ctx.message.text.toLowerCase()) {
+        case "да": 
+        await massMessage(ctx.session.message);
+        // await bot.sendMessage(Igor_ID, ctx.session.message);
+        await bot.sendMessage([Igor_ID, Ilya_ID], "Сообщение: \" " + ctx.session.message + "\" \n было отправлено");
+        await ctx.scene.leave();
+        await ctx.scene.enter("Батя в здании");
+        break;
+        case "нет":
+            await ctx.reply("Функция рассылки сообщения всем отменена \n Верну в начало менюшки");
+            ctx.scene.leave();
+            ctx.scene.enter("Батя в здании");
+            break;
+        default: 
+        ctx.reply("Такой функции нет");
+    }
+},
 );
 
-// const session = new Session();
-const stage_wakeUP = new Stage(scene_wakeUP);
-const stage_test = new Stage(sceneTest);
+const stage_wakeUP = new Stage(scene_Halloween, scene_Admin, scene_MassMessage);
+
 bot.use(stage_wakeUP.middleware());
-// bot.use(session.middleware());
-
-// bot.command('тест', async (ctx) => {
-//     ctx.scene.enter('Проверить сценарий');
-//     console.log(ctx.scene);
-//     }
-// );
 
 bot.command('Это Илья', (ctx) => {
     ctx.reply('Ооо, братанчик, рад тебя видеть', null, Markup 
@@ -268,7 +345,7 @@ bot.command('Это Света', (ctx) => {
     );
 });
 
-bot.command('Можно ебать', async (ctx) => ctx.scene.enter('Начать сценарий'));
+bot.command('Можно ебать', async (ctx) => ctx.scene.enter('Хеллоуин'));
 
 bot.command('Усни, чорт', async (ctx) => {
     await ctx.reply('Чао');
@@ -276,31 +353,12 @@ bot.command('Усни, чорт', async (ctx) => {
     bot.stop();
 });
 
-bot.command('Начать рассылку', async (ctx) => {
-    await ctx.reply("Рассылка сообщений начата");
-    let delay = 12000000;
-    let messageDate = new Date();
-
-    async function sendTexts(i) {
-        await massMessage(texts[i]);
-        await bot.sendMessage([Igor_ID, Ilya_ID], "Текст " + (i+1) + " отправлен")
-        await console.log(texts[i]);
-        i++;
-        if (i < texts.length) {setTimeout(function(){sendTexts(i);},delay);}
-    }
-    sendTexts(0);
-    // await setInterval(async () => { 
-    //     await bot.sendMessage([Igor_ID, Ilya_ID], i + ' ' + texts[i]);
-    //     await console.log('\n' + i + ' ' + texts[i]); 
-    // }, delay);
-});
-
 bot.command('', async (ctx) => { // Активация бота после начала мероприятия
-    if (new Date() > Activation_Time) {
-    await ctx.scene.enter('Начать сценарий');
-    console.log('Бот исправно начал работу после назначенного времени: ' + Activation_Time);
-    }
-    else ctx.reply("Отказано в доступе. \n Попробуйте позже.");
+        if (new Date() > Activation_Time) {
+        await ctx.scene.enter('Хеллоуин');
+        console.log('Бот исправно начал работу после назначенного времени: ' + Activation_Time);
+        }
+        else ctx.reply("Кажется, ночь кошмаров ещё не началась \n Попробуй написать мне чуть позже 🎃");
 });
 
 bot.startPolling((err) => {
