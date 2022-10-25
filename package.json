@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "node-vk-bot-api": "^3.5.0",
+    "node-vk-sdk": "^1.1.7",
+    "vk-node-sdk": "^0.1.8",
+    "xlsx": "^0.18.5",
+    "xmlhttprequest": "^1.8.0"
+  }
+}
