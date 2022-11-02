@@ -2,11 +2,46 @@
 
 // -----------------------------------------------------DB--------------------------------------------------
 
-// --Mongo DB
+const dbadress = "";
+    const mongoose = require('mongoose');
+    const User = require("./Scheme/User");
+    const MongoClient = require("mongodb");
+    // const client = new MongoClient("адрес бд");
+    // client.db().createCollection/insertOne/findOne() etc
+    
+    mongoose
+.connect(dbadress, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true
+})    
+    .then(() => console.log("mongodb merch-base connect"))
+    .catch(err => console.error(err));
 
-// -----------------------------------------------------DB--------------------------------------------------
+// -----------------------------------------------------GUIDE--------------------------------------------------
 
+// User.find({id: ctx.message.from_id}).then(result => {
+//     if(res[0] == undefined) {
+//         const currentUser = new User({
+//             name: "pidrila" ,
+//             surname: "sexovich",
+//             id: Ilya_ID,
+//         });
+//     currentUser.save().catch(e => {
+//         console.log(e);
+//     }).then(r => {
+//         ctx.reply("Пошол нахуй, ты не участвуеш \n изи скам");
+//     })
+//     } else {
+//         ctx.reply("Ещё деньги приму, но уже просто так, ты уже есть в БД");
+//     }
+// });
 
+// // Ещё возможности
+
+// User.find({id: ctx.message.from_id}).then(result => { // обновить inf
+
+// });
 
 // --------------------------------------ADMIN_SETTINGS----------------------------------------------------------- 
 
@@ -14,8 +49,14 @@ const Activation_Time = new Date(2022, 8, 29, 16, 45, 0, 0); // Время ак�
 // const token = 'vk1.a.OLjk1p-7yy9pwMYIYmAS-icJOnpZvCw9kazWTMY5tksUywQRhHN1c1zbnTZn_NhIM7enKn5F_Ax4UMRUSy0zIT8ZK-CEaMhY6ltAu_-q14Dba37mZl5AGsYMDTgTgz29H9xkoayFlFagE0l_ZdPWVT9eP68vPpFgKbUrbcHFg1B5wHN0mtYW3XAR-lUnYOg2';
 const token_test = 'vk1.a.k0tX4Z1DCA09RgW-m9OIRIDAQA8eZhdlQMVa-WQDZ84g2sUun6F23SxD5owfdgLI11kltP_X4vJU8ZGbQaWNe5UPyBcINZtu0Ye1jRZiY1UQoQlprs5kmGqVfBuUxAkt3A7bOX6JPPmtkCf68z5Pp_2lhEk87jm0I7Ap-tCRAaZtm0MY1k5LSDpaExgR6Iy-';
 
+
 const Igor_ID = 239146759;
 const Ilya_ID = 146966175;
+const Elena_Kozlova = 176918752;
+
+let admins = [Igor_ID, Ilya_ID, Elena_Kozlova];
+
+const groupID = -194237727; // "Я подозреваю Всё"
 
 let members = [];
 members[0] = {
@@ -24,7 +65,7 @@ members[0] = {
 
 
 const Requisites = '+7123456789';
-const delay = 300000; // 300 тысяч миллисекунд = 5 минут
+const delay = 10000; // 300 тысяч миллисекунд = 5 минут
 // Функции для обращения ко всем участникам
 
 // Рассылка сообщений циклом // ctx.message.from_id
@@ -51,33 +92,6 @@ class Participant { // участник
         this.vkID = vkID;
         this.paymentStatus = paymentStatus;
     };
-    //getters
-    get name() { 
-        return this._name 
-    };
-    get secondName() {
-        return this._secondName;
-    };
-    get vkID() {
-        return this._vkID;
-    };
-    get paymentStatus() {
-        return this._paymentStatus;
-    //setters
-    };
-    set name(value) {
-        this._name = value;
-    };
-    set secondName(value) {
-        this._secondName = value;
-    };
-    set vkID(value) {
-        this._vkID = value;
-    };
-    set paymentStatus(value) {
-        this._paymentStatus = value;
-    };
-
 };
 
 const addNewParticipant = (name, vkID) => {
@@ -95,20 +109,9 @@ function changeParticipantObject(currentParticipant, property, value) {
     currentParticipant.property = value;
 }
 
+let TheParticipant = new Participant('', '', '', false);
+
 let userTest = new Participant("Игорь", "Пепегин", Igor_ID, 1);
-
-const VkBot = require('node-vk-bot-api');
-const Scene = require('node-vk-bot-api/lib/scene');
-const Session = require('node-vk-bot-api/lib/session');
-const Stage = require('node-vk-bot-api/lib/stage');
-const Markup = require('node-vk-bot-api/lib/markup');
-
-const bot = new VkBot(token_test);
-
-const session = new Session();
-
-bot.use(session.middleware());
-
 
 
 let request = new URL(`https://api.vk.com/method/messages.getHistory?&count=1&peer_id=239146759&access_token=vk1.a.k0tX4Z1DCA09RgW-m9OIRIDAQA8eZhdlQMVa-WQDZ84g2sUun6F23SxD5owfdgLI11kltP_X4vJU8ZGbQaWNe5UPyBcINZtu0Ye1jRZiY1UQoQlprs5kmGqVfBuUxAkt3A7bOX6JPPmtkCf68z5Pp_2lhEk87jm0I7Ap-tCRAaZtm0MY1k5LSDpaExgR6Iy-&v=5.131`);
@@ -118,31 +121,70 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 async function confirmationWithLastMessage() {
     async function confirmation () {
-        let infromation = this.responseText.split(",");
-        let informationTo_arr = infromation.splice(infromation.length - 1);
-        let infromationTo_string = informationTo_arr.join();
-        let lastMessage = infromationTo_string.toLowerCase();
-        console.log(lastMessage, '\n эу \n');
-        if (lastMessage.toLowerCase.includes("подтвердить")){
-            ctx.scene.next();
-            bot.sendMessage(ctx.message.from_id, "Оплата подтверждена, двигаемся к регистрации");
-            let TheParticipant = findCurrentParticipant(ctx.message.from_id);
-            TheParticipant.paymentStatus = 1;
-            // Отправка на MongoDB сообщения об изменениях ...
-            // {*/}
-        } else 
-        console.log('Всё хуёва');
+        let answer = await JSON.parse(req.responseText);
+        let textInLastMessage = answer.response.items[0].text;
+        // console.log(req.responseText);
+        let senderID = answer.response.items[0].from_id;
+        if (senderID === groupID) {
+            if (textInLastMessage.toLowerCase().includes("подтвердить")) {
+                await console.log("Ееее боиии")
+                TheParticipant.paymentStatus = true;
+                await req.abort();
+            } else { 
+                console.log("Последнее сообщение от сообщества не подтверждает платёж");
+                console.log("\nСообщение: \n" + '"' + textInLastMessage + '"');
+                return 0;
+            }
+        } else {
+            console.log("Последнее сообщение отправлено не от лица сообщества")
+            return 0;
+        }
     }
-    
+    let isConfirmed = false;
     const req = new XMLHttpRequest();
-    let nice = 0;
-    req.addEventListener("load", confirmation());
+    req.addEventListener("load", confirmation);
     req.open("GET", request);
     req.send();
-    return 'smth'
+    return isConfirmed;
 }
 
-// console.log('Результат: ' + lastMessage);
+const checkPaymentStatus = async () => {
+    if (TheParticipant.paymentStatus === true) return 1
+    else return 0;
+}
+
+const confirmationLoop = async () => {
+    const checkingToLoop = () => {setTimeout(async () => {
+            if (checkPaymentStatus) return 1
+            else return 0;
+        }, delay);
+    }
+    console.log(checkingToLoop());
+    do {
+        await confirmationWithLastMessage();
+        console.log("Проверяю");
+    } while (await !checkingToLoop);
+}
+// JS sleep в while 
+confirmationLoop();
+
+// confirmationWithLastMessage();
+
+// console.log(TheParticipant.paymentStatus);
+
+const VkBot = require('node-vk-bot-api');
+const Scene = require('node-vk-bot-api/lib/scene');
+const Session = require('node-vk-bot-api/lib/session');
+const Stage = require('node-vk-bot-api/lib/stage');
+const Markup = require('node-vk-bot-api/lib/markup');
+const { find } = require('./Scheme/User');
+
+const bot = new VkBot(token_test);
+
+const session = new Session();
+
+bot.use(session.middleware());
+
 
 const scene_Halloween = new Scene('Хеллоуин', 
     async (ctx) => {
@@ -183,16 +225,12 @@ const scene_Halloween = new Scene('Хеллоуин',
         }
     },
     async (ctx) => {
-        ctx.reply("Обрабатываю");
-                        // do {
-                
-                // } while (!confirmationWithLastMessage());
-                // Нужна помощь
-                // setTimeout(confirmationWithLastMessage(), delay);
+        ctx.reply("Обрабатываю. \n Пожалуйста, ожидай моего ответа и не отправляй новых сообщений. Заранее спасибо :3");
+        confirmationLoop();
     },
     async (ctx) => {
         ctx.scene.next();
-        await bot.sendMessage(ctx.message.from_id, 'Введите через пробел свои имя и фамилию, проверьте, заранее, точность введённых данных');
+        await bot.sendMessage(ctx.message.from_id, 'Введите через пробел свои имя и фамилию, заранее проверьте точность введённых данных');
     },
 );
 
@@ -203,6 +241,7 @@ const scene_Admin = new Scene("Батя в здании", // Сценарий а
             [
                 Markup.button('Сообщение всем', 'primary'),
                 Markup.button('Ещё какая-то кнопка', 'primary'),
+                Markup.button("Отправь запрос", "positive"),
             ],
             [
                 Markup.button('Как настроение?', 'positive'),
@@ -220,7 +259,18 @@ const scene_Admin = new Scene("Батя в здании", // Сценарий а
                 ctx.scene.leave();
                 ctx.scene.enter("Сообщение всем");
                 break; 
-            case "...": 
+            case "отправь запрос": 
+                // setTimeout(func = () => {
+                //     confirmationWithLastMessage();
+                // }, delay);
+                console.log(confirmationWithLastMessage());
+                // if(*) {
+                //     bot.sendMessage(ctx.message.from_id, "Оплата подтверждена, двигаемся к регистрации");
+                //     ctx.scene.next();
+                // } else {
+                //     console.log("\n Что-то пошло не так");
+                // };
+                break;
             case "как настроение?": 
                 await ctx.reply("", "video174550193_456239109");
                 bot.sendMessage(ctx.message.from_id, "Это люба говорит");
@@ -240,6 +290,9 @@ const scene_Admin = new Scene("Батя в здании", // Сценарий а
                     ],
                     [
                         Markup.button('Как настроение?', 'positive'),
+                    ],
+                    [
+                        Markup.button("Покинуть admin-menu", "negative" ), 
                     ],
                 ])
                 );
@@ -356,7 +409,7 @@ bot.command('Усни, чорт', async (ctx) => {
 bot.command('', async (ctx) => { // Активация бота после начала мероприятия
         if (new Date() > Activation_Time) {
         await ctx.scene.enter('Хеллоуин');
-        console.log('Бот исправно начал работу после назначенного времени: ' + Activation_Time);
+        // bot.sendMessage([Ilya_ID, Igor_ID],'Бот исправно начал работу после назначенного времени: ' + Activation_Time);
         }
         else ctx.reply("Кажется, ночь кошмаров ещё не началась \n Попробуй написать мне чуть позже 🎃");
 });
